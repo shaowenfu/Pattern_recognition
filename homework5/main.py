@@ -14,18 +14,8 @@ def data_loader(d):
         Path = f'E:\\all_workspace\\ML\\Jupyter_notebook\\Pattern_recognition\\data\\dataset_homework5\\images\\train\\{i+1}.JPEG'
         points,trian_img_future = extract_sift_features(Path)
         train_features.append(trian_img_future)
+    return train_features,test_features
 
-    # test_features_normalized = normalize_descriptors_match(test_features)
-    # train_features_normalized = normalize_descriptors_match(train_features)
-    # 初始化PCA对象，设置降维后的目标维度为n_components
-    n_components = d  # 设置目标维度为100
-    pca = PCA(n_components=n_components)
-
-    # 使用PCA对特征进行降维
-    train_features_reduced = pca.fit_transform(train_features)
-    test_features_reduced = pca.fit_transform(test_features)
-
-    return train_features_reduced,test_features_reduced
 def label_loader():
     # 读取txt文件，将每一行拆分成图片文件名和对应标签，并存储到字典中
     train_label = []
@@ -47,28 +37,40 @@ def label_loader():
     return train_label,test_label
 
 if __name__ == '__main__':
+    # 设置初始化w和b
     d = 100
+    w0 = np.zeros(d)
+    b0 = 0
+    alpha = 0.2
+    maxepoch = 100
+    # 加载数据集和标签集
     train_set , test_set = data_loader(d)
     train_label,test_label = label_loader()
-    print("test_set:\n",test_set)
+
+    # PCA：数据降维处理
+    # test_features_normalized = normalize_descriptors_match(test_features)
+    # train_features_normalized = normalize_descriptors_match(train_features)
+    # 初始化PCA对象，设置降维后的目标维度为n_components
+    n_components = d  # 设置目标维度为100
+    pca = PCA(n_components=n_components)
+    # 使用PCA对特征进行降维
+    train_features_reduced = pca.fit_transform(train_set)
+    test_features_reduced = pca.fit_transform(test_set)
+
     # 选取标签为0金鱼，标签为1青蛙的训练和测试集
     i =0
-    test_data = []
+    test_data = [] # 测试集
     for value in test_label:
         if value == 0 or value ==1:
             test_data.append([test_set[i],value])
         i = i + 1
-    train_data = []
+    train_data = [] #训练集
     i =0
     for label in train_label:
         if label ==0 or label ==1:
             train_data.append([train_set[i],label])
         i = i+1
-    # 设置初始化w和b
-    w0 = np.zeros(d)
-    b0 = 0
-    alpha = 0.5
-    maxepoch = 100
+
     w,b = perceptron(train_data,w0,b0,alpha,maxepoch)
     success = 0
     # 在测试集上测试
